@@ -2,13 +2,15 @@
 PATH='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/java/default/bin:/bin::/root/bin'
 export PATH
 logfile=/var/log/redis_6379__monitor.log
+external_ip=''
+mail_to=''
 serverip='127.0.0.1'
 redisport=6379
 slave_target=1
 mem_target=0.95
 cpu_target=0.9
 error_msg=''
-down_msg='Redis was down!! IP:52.11.70.32 PORT:6379. It was restarted, Please keep an eyes on it and ensure redis working fine '
+down_msg='Redis was down!! IP:${external_ip} PORT:6379. It was restarted, Please keep an eyes on it and ensure redis working fine '
 #restart_cmd="/usr/local/bin/redis-server /etc/redis/redis_6379.conf"
 echo $(date) >> $logfile
 pid=$(ps -ef | grep redis-server | grep 6379 | grep -v grep | awk '{print $2}')
@@ -16,7 +18,7 @@ if [ "$pid" = '' ] ; then
     echo "[ERROR]Redis is shutdown" >>$logfile
     `/usr/local/bin/redis-server /etc/redis/redis_6379.conf`
     error_msg=$down_msg
-    echo $error_msg | mail -s "52.11.70.32-6379-redis_monitor" dev.server@holaverse.com
+    echo $error_msg | mail -s "${external_ip}-6379-redis_monitor" ${mail_to}
     exit
 else
     echo "[INFO]pid:$pid" >>$logfile
@@ -55,5 +57,5 @@ fi
 
 if [ "$error_msg" != '' ] ; then
 	#curl $alert_url$error_msg
-	echo ${error_msg} | mail -s "52.11.70.32-6379-redis_monitor" dev.server@holaverse.com
+	echo ${error_msg} | mail -s "${external_ip}-6379-redis_monitor" ${mail_to}
 fi
